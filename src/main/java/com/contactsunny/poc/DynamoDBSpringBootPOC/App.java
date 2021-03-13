@@ -46,6 +46,7 @@ public class App implements CommandLineRunner {
 
         tableRequest.setProvisionedThroughput(
                 new ProvisionedThroughput(1L, 1L));
+        
 
         TableUtils.createTableIfNotExists(amazonDynamoDB, tableRequest);
 

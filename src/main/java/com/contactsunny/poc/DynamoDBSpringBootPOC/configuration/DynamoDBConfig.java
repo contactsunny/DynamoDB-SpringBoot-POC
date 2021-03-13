@@ -1,9 +1,14 @@
 package com.contactsunny.poc.DynamoDBSpringBootPOC.configuration;
 
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+
 import org.socialsignin.spring.data.dynamodb.repository.config.EnableDynamoDBRepositories;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,21 +28,28 @@ public class DynamoDBConfig {
 
     @Value("${amazon.aws.secretKey}")
     private String awsSecretKey;
-
+    
+    @Value("${amazon.aws.region}")
+    private String awsRegion;
+    
+   
+    public AwsClientBuilder.EndpointConfiguration endpointConfiguration() {
+        return new AwsClientBuilder.EndpointConfiguration(dynamoDbEndpoint, awsRegion);
+    }
+ 
+    @Bean
+    public AWSCredentialsProvider awsCredentialsProvider() {
+        return new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey));
+    }
+ 
     @Bean
     public AmazonDynamoDB amazonDynamoDB() {
-        AmazonDynamoDB amazonDynamoDB
-                = new AmazonDynamoDBClient(amazonAWSCredentials());
-
-        if (!StringUtils.isEmpty(dynamoDbEndpoint)) {
-            amazonDynamoDB.setEndpoint(dynamoDbEndpoint);
-        }
-
-        return amazonDynamoDB;
+        return AmazonDynamoDBClientBuilder
+                .standard()
+                .withEndpointConfiguration(endpointConfiguration())
+                .withCredentials(awsCredentialsProvider())
+                .build();
     }
-
-    @Bean
-    public AWSCredentials amazonAWSCredentials() {
-        return new BasicAWSCredentials(awsAccessKey, awsSecretKey);
-    }
+    
+   
 }
