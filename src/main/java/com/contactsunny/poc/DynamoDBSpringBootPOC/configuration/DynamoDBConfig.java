@@ -1,19 +1,16 @@
 package com.contactsunny.poc.DynamoDBSpringBootPOC.configuration;
 
-import com.amazonaws.auth.AWSCredentials;
+import org.socialsignin.spring.data.dynamodb.repository.config.EnableDynamoDBRepositories;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-
-import org.socialsignin.spring.data.dynamodb.repository.config.EnableDynamoDBRepositories;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
 
 @Configuration
 @EnableDynamoDBRepositories
@@ -33,10 +30,6 @@ public class DynamoDBConfig {
     private String awsRegion;
     
    
-    public AwsClientBuilder.EndpointConfiguration endpointConfiguration() {
-        return new AwsClientBuilder.EndpointConfiguration(dynamoDbEndpoint, awsRegion);
-    }
- 
     @Bean
     public AWSCredentialsProvider awsCredentialsProvider() {
         return new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey));
@@ -52,4 +45,7 @@ public class DynamoDBConfig {
     }
     
    
+    private AwsClientBuilder.EndpointConfiguration endpointConfiguration() {
+        return new AwsClientBuilder.EndpointConfiguration(dynamoDbEndpoint, awsRegion);
+    }
 }
