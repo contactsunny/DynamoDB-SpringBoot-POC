@@ -7,7 +7,8 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import com.contactsunny.poc.DynamoDBSpringBootPOC.models.AwsService;
 import com.contactsunny.poc.DynamoDBSpringBootPOC.repositories.AwsServiceRepository;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class App implements CommandLineRunner {
 
     private DynamoDBMapper dynamoDBMapper;
+    private ObjectMapper objectMapper;
 
     @Autowired
     private AmazonDynamoDB amazonDynamoDB;
@@ -38,14 +40,14 @@ public class App implements CommandLineRunner {
     public void run(String... strings) throws Exception {
 
         dynamoDBMapper = new DynamoDBMapper(amazonDynamoDB);
-
-
+        objectMapper = new ObjectMapper();
 
         CreateTableRequest tableRequest = dynamoDBMapper
                 .generateCreateTableRequest(AwsService.class);
 
         tableRequest.setProvisionedThroughput(
                 new ProvisionedThroughput(1L, 1L));
+        
 
         TableUtils.createTableIfNotExists(amazonDynamoDB, tableRequest);
 
@@ -56,7 +58,7 @@ public class App implements CommandLineRunner {
 
         awsService = awsServiceRepository.save(awsService);
 
-        logger.info("Saved AwsService object: " + new Gson().toJson(awsService));
+        logger.info("Saved AwsService object: " + objectMapper.writeValueAsString(awsService));
 
         String awsServiceId = awsService.getId();
 
@@ -64,14 +66,14 @@ public class App implements CommandLineRunner {
 
         Optional<AwsService> awsServiceQueried = awsServiceRepository.findById(awsServiceId);
 
-        if (awsServiceQueried.get() != null) {
-            logger.info("Queried object: " + new Gson().toJson(awsServiceQueried.get()));
+        if (awsServiceQueried.isPresent()) {
+            logger.info("Queried object: " + objectMapper.writeValueAsString(awsServiceQueried.get()));
         }
 
         Iterable<AwsService> awsServices = awsServiceRepository.findAll();
 
         for (AwsService awsServiceObject : awsServices) {
-            logger.info("List object: " + new Gson().toJson(awsServiceObject));
+            logger.info("List object: " + objectMapper.writeValueAsString(awsServiceObject));
         }
     }
 }
